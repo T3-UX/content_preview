@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  T3UX\ContentPreview\:
+    resource: '../Classes/*'
+
+  T3UX\ContentPreview\EventListener\AddPageUidAttributeToLinks:
+    tags:
+      - name: event.listener
+        identifier: 'contentpreview.add-page-uid'
+        event: TYPO3\CMS\Frontend\Event\AfterLinkIsGeneratedEvent

@@ -1,0 +1,36 @@
+{
+    "name": "t3-ux/content_preview",
+    "description": "Preview your content in page module and boost your CMS experience.",
+    "type": "typo3-cms-extension",
+    "license": [
+        "GPL-2.0-or-later"
+    ],
+    "author": [
+      {
+        "name": "Łukasz Uznański",
+        "email": "extension@macopedia.pl",
+        "role": "Developer"
+      },
+      {
+        "name": "Tomasz Woldański",
+        "email": "extension@macopedia.pl",
+        "role": "Developer"
+      }
+    ],
+    "require": {
+        "typo3/cms-core": "^12.4 || ^13.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "T3UX\\ContentPreview\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "content_preview",
+            "app-dir": ".Build",
+            "web-dir": ".Build/public"
+        }
+    },
+    "vendor-dir": ".Build/vendor"
+}

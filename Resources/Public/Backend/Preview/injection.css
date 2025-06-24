@@ -1,0 +1,92 @@
+.pce-edit-link {
+  padding: 2px 8px;
+  border: 2px solid #aaa;
+  text-decoration: none;
+  border-radius: 3px;
+  background-color: rgba(64, 64, 64, 0.8);
+  color: rgba(255, 255, 255, 1);
+  display: block;
+  width: fit-content;
+  position: relative;
+  z-index: 100;
+  transform: translateX(-1px) translateY(10px);
+  opacity: 0;
+  font-size: 14px;
+  transition: 0.2s all ease;
+}
+
+.pce-target-highlight > *:not(.pce-edit-link) {
+  background-color: #ee7600 !important;
+}
+
+[data-pce-show-outline-on-target-hover] .pce-target:hover > *:not(.pce-edit-link),
+[data-pce-always-show-outline] .pce-target > *:not(.pce-edit-link),
+[data-pce-show-outline-on-link-hover] .pce-target:has(.pce-edit-link:hover) > *:not(.pce-edit-link) {
+  outline-color: #ee7600;
+}
+
+[data-pce-focused] .pce-edit-link {
+  border-color: #ee7600;
+  color: #ee7600;
+  font-weight: 600;
+}
+
+.pce-target > *:not(.pce-edit-link) {
+  outline: 1px solid transparent;
+  background-color: transparent;
+  transition: opacity 0.2s ease, outline-color 0.2s ease, background-color 0.2s ease;
+}
+
+[data-pce-dim-inactive] .pce-target > *:not(.pce-edit-link) {
+  opacity: 0.3;
+}
+
+[data-pce-always-show-links] .pce-edit-link,
+.pce-target:hover .pce-edit-link {
+  transform: translateX(-1px) translateY(0);
+  opacity: 1;
+}
+
+[data-pce-focused] > *:not(.pce-edit-link),
+.pce-target:hover > *:not(.pce-edit-link) {
+  opacity: 1 !important;
+}
+
+.pce-indicator {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: fit-content;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  border: 2px solid #ee7600;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  opacity: 0;
+  margin: 0 auto;
+  cursor: pointer;
+  color: white;
+  display: none;
+}
+
+[data-pce-show-location-indicators] .pce-indicator {
+  display: block;
+}
+
+.pce-indicator-above {
+  top: calc(var(--pce-obstruction-height, 0) + 50px);
+}
+
+.pce-indicator-below {
+  bottom: 50px;
+}
+
+[data-pce-focused-above] .pce-indicator-above {
+  opacity: 1;
+  pointer-events: full;
+}
+
+[data-pce-focused-below] .pce-indicator-below {
+  opacity: 1;
+  pointer-events: full;
+}

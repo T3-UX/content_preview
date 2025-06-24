@@ -1,0 +1,40 @@
+pce-config-panel {
+  display: block;
+  position: fixed;
+  width: fit-content;
+  z-index: 9999;
+  top: 100px;
+  left: 0;
+  z-index: 9999;
+}
+
+pce-config-panel button.pce-config-panel-toggle {
+  aspect-ratio: 1/1;
+  width: 32px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: 1px solid #aeaeae;
+  border-radius: 0 4px 4px 0;
+}
+
+pce-config-panel ul {
+  display: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1px solid #aeaeae;
+  color: white;
+  width: fit-content;
+  padding: 6px;
+}
+
+pce-config-panel label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+pce-config-panel[data-open] ul {
+  display: block;
+}

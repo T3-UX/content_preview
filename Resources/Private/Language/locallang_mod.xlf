@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.0">
+    <file source-language="en" target-language="pl" datatype="plaintext" original="messages">
+        <body>
+            <trans-unit id="pce.button.edit">
+                <source>Edit</source>
+                <target>Edytuj</target>
+            </trans-unit>
+            <trans-unit id="pce.button.editing">
+                <source>You are editing this element</source>
+                <target>Edytujesz ten element</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
