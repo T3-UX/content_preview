@@ -22,7 +22,6 @@ composer require t3-ux/content_preview
 2. **Enable the feature flag** (enabled by default):
 
 ```typoscript
-
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['contentPreview.enable'] = true
 ```
 
