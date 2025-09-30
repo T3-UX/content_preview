@@ -5,7 +5,10 @@ It provides a **side-by-side split view**: TYPO3’s backend UI on the left, and
 
 This significantly reduces context-switching for editors and brings TYPO3 closer to modern CMS editing experiences.
 
-Right now, support for TYPO3 v12 and v13.
+![Content preview](./Resources/Public/Images/screenshot.png?raw=true "Content preview")
+
+
+Right now, we support for TYPO3 v12 and v13.
 
 > 🔧 Content preview is controlled by the feature flag: `contentPreview.enable`
 
