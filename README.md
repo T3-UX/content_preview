@@ -22,7 +22,8 @@ composer require t3-ux/content_preview
 2. **Enable the feature flag** (enabled by default):
 
 ```typoscript
-SYS.features.contentPreview.enable = true
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['contentPreview.enable'] = true
 ```
 
 ---
@@ -83,7 +84,7 @@ The Content Preview is highly configurable. Administrators can define **when and
 
 ### Global feature flag
 
-Enable or disable the extension globally:
+Enable or disable the preview globally:
 
 ```typoscript
 SYS.features.contentPreview.enable = true|false
