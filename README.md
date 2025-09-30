@@ -1,14 +1,12 @@
 # Content Preview
+![Content preview](./Resources/Public/Images/screenshot.png?raw=true "Content preview")
 
 **Content Preview** is a TYPO3 extension that improves the editing workflow by adding a **content preview panel** directly into the Page module.
 It provides a **side-by-side split view**: TYPO3’s backend UI on the left, and a live frontend preview on the right. The preview is annotated with **✎ Edit buttons** on every content element. Clicking a button opens the corresponding `tt_content` editor, while the preview **automatically scrolls** to the edited element.
 
 This significantly reduces context-switching for editors and brings TYPO3 closer to modern CMS editing experiences.
 
-![Content preview](./Resources/Public/Images/screenshot.png?raw=true "Content preview")
-
-
-Right now, we support for TYPO3 v12 and v13.
+Right now, we support TYPO3 v12 and v13.
 
 > 🔧 Content preview is controlled by the feature flag: `contentPreview.enable`
 
@@ -24,7 +22,7 @@ composer require t3-ux/content_preview
 
 2. **Enable the feature flag** (enabled by default):
 
-```typoscript
+```php
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['contentPreview.enable'] = true
 ```
 
@@ -43,40 +41,46 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['contentPreview.enable'] = true
     - HTTP header `X-Page-Content-Editor: 1`
     - Query string `?pce=1`
 - **Configuration option to disable preview for user**:
-    - If you want to disable preview to user: ```['options.']['contentPreview.']['enable'] = 0```
+    - If you want to disable preview for a user: `options.contentPreview.enable = 0`
 - **Safety rails** (to avoid unwanted preview rendering):
     - **Doktype allowlist** (configurable) ensures only relevant page types show preview.
-    - **ReturnUrl blacklist** ensures preview is disabled for irrelevant modules (e.g. link-reports).
+    - **ReturnUrl blacklist** ensures preview is disabled for irrelevant modules (e.g. `link-reports`).
     - Works only in backend for `web_layout` (Page module) and `record_edit` routes.
 
 ---
 
 ## How it works
 
-The extension consists of three cooperating parts:
+The extension has **two cooperating layers**: backend integration and frontend modification.
 
-1. **Backend hook (`PageRendererHook::renderPreProcess`)**
-    - Runs only when the current route is `web_layout` or `record_edit`.
-    - Decides what to render based on route.
-    - Checks the **returnUrl blacklist** to skip irrelevant modules.
-    - Verifies whether the user has the feature enabled (per-user toggle).
-    - Builds a **preview URL** with the correct language context (from `?language` or module data).
-    - Loads the JavaScript and styles for split view (`pce-split.js`) into the TYPO3 backend.
+Description below is true for PostMessage approach.
 
-2. **Frontend middleware (`PageContentEditorPreviewMiddleware`)**
-    - Intercepts frontend HTML responses when `?pce=1` or the header is present.
-    - Injects **edit buttons** into every content element with DOM id `c{uid}`.
-    - Adds supporting CSS/JS assets for the editor preview.
+### 1. Backend integration (hook)
 
-3. **JavaScript (`pce-split.js and other`)**
-    - Renders the **split layout** in the backend (left: TYPO3 module, right: iframe preview).
-    - Loads the preview iframe.
-    - Manages navigation back and forth:
-        - Clicking an edit button in preview → opens correct record editor in backend.
-        - Saving in backend → preview scrolls back to the same element.
-    - Synchronizes focus and navigation using `sessionStorage` + `postMessage`.
+- Runs only when the current route is `web_layout` or `record_edit`.
+- Checks whether preview should run at all:
+    - Feature flags and per-user toggle.
+    - Doktype allowlist.
+    - `returnUrl` blacklist (modules like `link-reports` are excluded by default).
+- Builds a **preview URL** with the correct language context (from `?language` or module data).
+- Loads the required JavaScript and CSS for split view (`pce-split.js`, stylesheets).
 
-This architecture ensures editors can switch between **editing** and **previewing** without leaving the Page module.
+### 2. Frontend modification (middleware)
+
+- Intercepts frontend HTML responses when `?pce=1` or the header is present.
+- Actively **injects extra HTML** into the response:
+    - Adds ✎ edit buttons next to every content element with DOM id `c{uid}`.
+    - Injects CSS and JS needed for highlighting and scroll handling.
+- This is not just a passive JS overlay – the HTML output is modified to include buttons and attributes.
+
+### 3. Backend JavaScript (split view UI)
+
+- Renders the split layout in the backend (left: Page module, right: preview iframe).
+- Manages navigation between editing and preview:
+    - Clicking an edit button → opens the correct record editor.
+    - Saving a record → preview iframe scrolls back to the edited element.
+- Handles communication via `sessionStorage` and `postMessage`.
+- Experimental: **navigation inside preview** – when clicking internal links in preview, the backend can switch context to the target page. (Language handling, navigation via DataProcessor and cross-domain support are still limited.) - for full integration, add ```data-pce-page-uid``` attribute to your links with pid value. This feature is disabled by default.
 
 ---
 
@@ -84,22 +88,27 @@ This architecture ensures editors can switch between **editing** and **previewin
 
 The Content Preview is highly configurable. Administrators can define **when and how** the preview is shown, and developers can extend its logic.
 
-### Global feature flag
+### Global feature flags
 
 Enable or disable the preview globally:
 
 ```typoscript
 SYS.features.contentPreview.enable = true|false
+SYS.features.contentPreview.postMessages = true|false
 ```
+
+- `enable` – turns the feature on/off for the whole system.
+- `postMessages` – switches between **Full mode** (with postMessage communication and panel) and **Lite mode** (new approach, with javascript injection).
 
 ### Per-user TSConfig
 
-Enable/disable for individual users, and optionally extend allowlists:
+Enable/disable for individual users, and extend allowlists if needed:
 
 ```typoscript
 # Enable (default if unset)
 options.contentPreview.enable = 1
 
+# Extend allowed doktypes
 options.pageContentEditor.pageTypesWhitelist = 1, 137
 ```
 
@@ -117,29 +126,19 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['content_preview'] = [
 ];
 ```
 
+- **Allowlist** ensures only pages with specific doktypes are previewed.
+- **Blacklist** ensures preview is skipped when `returnUrl` points to excluded modules (e.g. reports).
+
 ### Runtime extension via PSR-14 events
 
-For more dynamic scenarios, you can hook into PSR-14 events to adjust configuration at runtime:
+For more dynamic scenarios, you can hook into PSR-14 events:
 
-**Modify doktype allowlist**
-Event: `T3UX\ContentPreview\Event\ModifyPreviewPageTypesEvent`
+- **Modify doktype allowlist**: `T3UX\ContentPreview\Event\ModifyPreviewPageTypesEvent`
+- **Modify returnUrl blacklist**: `T3UX\ContentPreview\Event\ModifyDisallowedReturnUrlPathsEvent`
+  → lets you add/remove backend routes where preview must never run.
 
-```php
-$types = $event->getPageTypes();
-$types[] = 137; // custom doktype
-$event->setPageTypes($types);
-```
-
-**Modify returnUrl blacklist**
-Event: `T3UX\ContentPreview\Event\ModifyDisallowedReturnUrlPathsEvent`
-
-```php
-$paths = $event->getPaths();
-$paths[] = '/typo3/module/page/another-report';
-$event->setPaths($paths);
-```
-
-Register listeners as usual in `Services.yaml`.
+Register listeners in `Services.yaml` *or* using PHP attributes (`#[AsEventListener]`).
+See [TYPO3 Event Dispatcher docs](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/Events/EventDispatcher/Index.html).
 
 ---
 
@@ -147,10 +146,10 @@ Register listeners as usual in `Services.yaml`.
 
 **Nothing happens in backend**
 - Make sure you are in `web_layout` or `record_edit`.
-- Ensure the returnUrl is not blacklisted (e.g. `/typo3/module/page/link-reports` is excluded by default).
+- Ensure the `returnUrl` is not blacklisted (default: `/typo3/module/page/link-reports`).
 
 **Edit buttons missing in preview**
-- Verify that content elements are annotated with ```injectEditButtons``` method.
+- Verify that content elements are annotated with the `injectEditButtons` method.
 
 ---
 
@@ -158,8 +157,16 @@ Register listeners as usual in `Services.yaml`.
 
 Planned improvements and areas for contribution:
 
-- **Workspaces support** – allow preview of unpublished content, integrated with TYPO3’s workspace mechanism.
-- **Start/stop date simulation** – simulate scheduled publishing/expiry directly in preview.
-- **Frontend user/group simulation** – preview pages as if logged in as a specific user/group.
-- **Alternative preview modes** – support floating windows or opening preview in a separate tab.
-- **Cross-domain improvements** – make preview work  with multi-domain/multi-root setups without relogin.
+- **Workspaces support** – allow preview of unpublished content.
+- **Start/stop date simulation** – simulate scheduled publishing/expiry.
+- **Frontend user/group simulation** – preview as specific FE user/group.
+- **Alternative preview modes** – floating windows or external tabs.
+- **Cross-domain improvements** – more robust preview for multi-domain/multi-root setups.
+
+---
+
+## Support & contributions
+
+- Please report issues via [GitHub Issues](https://github.com/t3-ux/content_preview/issues).
+- Contributions, bug reports, and feedback are welcome.
+- For TYPO3-specific questions, also see the [TYPO3 documentation](https://docs.typo3.org).
