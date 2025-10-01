@@ -53,7 +53,7 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['contentPreview.enable'] = true
 
 The extension has **two cooperating layers**: backend integration and frontend modification.
 
-> 🔧 We require your frontend to have ```id=c####``` parameter within your CE, that means you should have identifier prefixed by ```c``` and id of content element.
+> 🔧 We require your frontend to have ```id=c####``` parameter within your CE, that means you should have identifier set to every content element - prefixed by ```c``` and id of content element.
 
 Description below is true for PostMessage approach.
 
