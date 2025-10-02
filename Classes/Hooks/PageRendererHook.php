@@ -53,6 +53,10 @@ final class PageRendererHook
 
         $helper = GeneralUtility::makeInstance(PreviewHelper::class);
 
+        if (!$helper->isFeatureFlagEnabled()) {
+            return false;
+        }
+
         if (!$helper->isInPageModuleOrRecordEdit($request)) {
             return false;
         }
