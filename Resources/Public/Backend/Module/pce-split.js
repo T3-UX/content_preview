@@ -182,8 +182,7 @@ class PceSplitModule {
             this._bootLog("_attachSplit: right.height =", paddedModuleBodyHeight);
         }, 0);
 
-        iframe.addEventListener("load", () => {
-            this._bootLog("iframe: load", iframe.src);
+        const notifyFocusedIframe = () => {
             const uid =
                 focusUid ||
                 parseInt((() => { try { return sessionStorage.getItem("pceFocusUid"); } catch { return "0"; } })() || "0", 10) ||
@@ -198,6 +197,11 @@ class PceSplitModule {
                     this._bootWarn("iframe: postMessage failed", e);
                 }
             }
+        }
+
+        iframe.addEventListener("load", () => {
+            this._bootLog("iframe: load", iframe.src);
+            notifyFocusedIframe();
         });
 
         window.addEventListener("message", (e) => {
@@ -210,6 +214,9 @@ class PceSplitModule {
                     break;
                 case "pce-open-page-uid":
                     this._navigateToPage(msg.uid, pageUrlBase);
+                    break;
+                case "pce-preview-ready":
+                    notifyFocusedIframe();
                     break;
                 default:
                     break;
