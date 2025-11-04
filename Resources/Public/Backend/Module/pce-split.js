@@ -182,17 +182,23 @@ class PceSplitModule {
             this._bootLog("_attachSplit: right.height =", paddedModuleBodyHeight);
         }, 0);
 
-        const notifyFocusedIframe = () => {
-            const uid =
-                focusUid ||
-                parseInt((() => { try { return sessionStorage.getItem("pceFocusUid"); } catch { return "0"; } })() || "0", 10) ||
-                0;
+        let focusedUid = focusUid;
 
-            if (uid) {
-                try { sessionStorage.removeItem("pceFocusUid"); } catch {}
+        if (!focusedUid) {
+          try {
+            const sessionUid = sessionStorage.getItem('pceFocusUid')
+            focusedUid = parseInt(sessionUid || '0', 10)
+          } catch {
+            focusedUid = focusUid
+          }
+        }
+        try { sessionStorage.removeItem("pceFocusUid"); } catch {}
+
+        const notifyFocusedIframe = () => {
+            if (focusedUid) {
                 try {
-                    iframe.contentWindow?.postMessage({ type: "pce-scroll-to-uid", uid }, "*");
-                    this._bootLog("iframe: postMessage scroll to uid", uid);
+                    iframe.contentWindow?.postMessage({ type: "pce-scroll-to-uid", uid: focusedUid }, "*");
+                    this._bootLog("iframe: postMessage scroll to uid", focusedUid);
                 } catch (e) {
                     this._bootWarn("iframe: postMessage failed", e);
                 }
