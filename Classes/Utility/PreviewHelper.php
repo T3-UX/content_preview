@@ -7,6 +7,7 @@ use T3UX\ContentPreview\Event\ModifyDisallowedReturnUrlPathsEvent;
 use T3UX\ContentPreview\Event\ModifyPreviewPageTypesEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Module\ModuleData;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -105,7 +106,30 @@ final class PreviewHelper implements PreviewHelperInterface
             ? (string)$route->getOption('_identifier')
             : '';
 
+        if ($routeId === 'web_layout') {
+            $function = $this->getCurrentFunction($request);
+            if ($function === 2) {
+                return false;
+            }
+        }
+
         return $routeId === 'web_layout' || $routeId === 'record_edit';
+    }
+
+    private function getCurrentFunction(ServerRequestInterface $request): int
+    {
+        $queryParams = $request->getQueryParams();
+
+        if (array_key_exists('function', $queryParams)) {
+            return (int)$queryParams['function'];
+        }
+
+        $moduleData = $request->getAttribute('moduleData');
+        if ($moduleData instanceof ModuleData) {
+            return (int)$moduleData->get('function', 1);
+        }
+
+        return 1;
     }
 
     /**
